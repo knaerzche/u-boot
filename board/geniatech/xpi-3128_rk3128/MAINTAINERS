@@ -1,0 +1,6 @@
+XPI-3128-RK3128
+M:      Alex Bee <knaerzche@gmail.com>
+S:      Maintained
+F:      board/geniatech/xpi-3128_rk3128
+F:      include/geniatech-xpi-3128-rk3128.h
+F:      configs/xpi-3128-rk3128_defconfig

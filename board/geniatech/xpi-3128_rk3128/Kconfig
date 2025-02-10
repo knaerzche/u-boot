@@ -1,0 +1,12 @@
+if TARGET_XPI_3128_RK3128
+
+config SYS_BOARD
+	default "xpi-3128_rk3128"
+
+config SYS_VENDOR
+	default "geniatech"
+
+config SYS_CONFIG_NAME
+	default "xpi-3128-rk3128"
+
+endif

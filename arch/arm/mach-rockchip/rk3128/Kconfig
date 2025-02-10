@@ -11,6 +11,12 @@ config TARGET_EVB_RK3128
 	  with full function and phisical connectors support like
 	  usb2.0 host ports, LVDS, JTAG, MAC, SDcard, HDMI, USB-2-serial...
 
+config TARGET_XPI_3128_RK3128
+        bool "Geniatech XPI-3128 board"
+        select BOARD_LATE_INIT
+        help
+	  XPI-3128 is a SBC board based on Rockchip RK3128
+
 endchoice
 
 config ROCKCHIP_BOOT_MODE_REG
@@ -46,6 +52,7 @@ config TPL_TEXT_BASE
 config TPL_SYS_MALLOC_F_LEN
 	default 0x0 if TPL
 
+source "board/geniatech/xpi-3128_rk3128/Kconfig"
 source "board/rockchip/evb_rk3128/Kconfig"
 
 endif

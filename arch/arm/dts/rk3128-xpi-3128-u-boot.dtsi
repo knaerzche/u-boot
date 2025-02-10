@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "rk3128-u-boot.dtsi"
+
+&emmc {
+	bootph-pre-ram;
+	bootph-some-ram;
+};
+
+&sdmmc {
+	bootph-pre-ram;
+	bootph-some-ram;
+};
+
+&vcc_sd {
+	bootph-pre-ram;
+	bootph-some-ram;
+};
+
+&uart1 {
+	bootph-all;
+};
+
+&uart1_xfer {
+	bootph-all;
+};
+
+&vdd_arm {
+	regulator-init-microvolt = <1050000>;
+};
+
+&vdd_log {
+	/* not supported by u-boot */
+	/delete-property/ pwm-dutycycle-range;
+	regulator-min-microvolt =   <950000>;
+	regulator-init-microvolt = <1050000>;
+};
