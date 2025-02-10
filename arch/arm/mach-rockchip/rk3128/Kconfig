@@ -19,14 +19,32 @@ config ROCKCHIP_BOOT_MODE_REG
 config ROCKCHIP_STIMER_BASE
 	default 0x200440a0
 
+config RAM_ROCKCHIP_DEBUG
+	default n
+
+config SPL_PAD_TO
+	default 0x7f8000
+
+config OF_SPL_REMOVE_PROPS
+	default "clock-names interrupt-parent assigned-clocks assigned-clock-rates assigned-clock-parents"
+
 config SYS_SOC
 	default "rk3128"
 
-config SYS_MALLOC_F_LEN
-	default 0x10000
+config TPL_FRAMEWORK
+	default n if TPL
 
-config CUSTOM_SYS_INIT_SP_ADDR
-	default 0x63f00000
+config TPL_MAX_SIZE
+	default 0x1800 if TPL
+
+config TPL_STACK
+	default 0x10082000 if TPL
+
+config TPL_TEXT_BASE
+        default 0x10080800 if TPL
+
+config TPL_SYS_MALLOC_F_LEN
+	default 0x0 if TPL
 
 source "board/rockchip/evb_rk3128/Kconfig"
 
