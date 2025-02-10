@@ -7,6 +7,11 @@
 		u-boot,spl-boot-order = "same-as-spl", &sdmmc, &emmc;
 	};
 
+	crypto: crypto@100fc000 {
+		compatible = "rockchip,rk3288-crypto";
+		reg = <0x100fc000 0x4000>;
+	};
+
 	dmc: dmc@20004000 {
 		compatible = "rockchip,rk3128-dmc", "syscon";
 		reg = <0x0 0x20004000 0x0 0x1000>;
