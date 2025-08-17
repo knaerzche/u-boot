@@ -1531,7 +1531,7 @@ config SPL_YMODEM_SUPPORT
 
 config SPL_ATF
 	bool "Support ARM Trusted Firmware"
-	depends on ARM64
+	depends on ARM || ARM64
 	depends on SPL_LOAD_FIT && !SPL_FIT_IMAGE_TINY
 	help
 	  ATF(ARM Trusted Firmware) is a component for ARM AArch64 which

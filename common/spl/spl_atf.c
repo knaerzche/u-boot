@@ -74,8 +74,10 @@ struct bl31_params *bl2_plat_get_bl31_params_default(ulong bl32_entry,
 	/* secure payload is optional, so set pc to 0 if absent */
 	bl32_ep_info->args.arg3 = fdt_addr;
 	bl32_ep_info->pc = bl32_entry ? bl32_entry : 0;
+#ifdef CONFIG_ARM64 /* todo for arm32 */
 	bl32_ep_info->spsr = SPSR_64(MODE_EL1, MODE_SP_ELX,
 				     DISABLE_ALL_EXECPTIONS);
+#endif
 
 	bl2_to_bl31_params->bl32_image_info = &bl31_params_mem.bl32_image_info;
 	SET_PARAM_HEAD(bl2_to_bl31_params->bl32_image_info,
@@ -90,9 +92,19 @@ struct bl31_params *bl2_plat_get_bl31_params_default(ulong bl32_entry,
 	/* BL33 expects to receive the primary CPU MPID (through x0) */
 	bl33_ep_info->args.arg0 = 0xffff & read_mpidr();
 	bl33_ep_info->pc = bl33_entry;
+#ifdef CONFIG_ARM64
 	bl33_ep_info->spsr = SPSR_64(MODE_EL2, MODE_SP_ELX,
 				     DISABLE_ALL_EXECPTIONS);
-
+#else
+	bl33_ep_info->spsr = SPSR_MODE32(MODE32_hyp,
+					 SPSR_T_ARM,
+#ifdef __ARMEB__
+					 SPSR_E_BIG,
+#else
+					 SPSR_E_LITTLE,
+#endif
+					 DISABLE_ALL_EXECPTIONS);
+#endif
 	bl2_to_bl31_params->bl33_image_info = &bl31_params_mem.bl33_image_info;
 	SET_PARAM_HEAD(bl2_to_bl31_params->bl33_image_info,
 		       ATF_PARAM_IMAGE_BINARY, ATF_VERSION_1, 0);
@@ -148,8 +160,12 @@ struct bl_params *bl2_plat_get_bl31_params_v2_default(ulong bl32_entry,
 	/* secure payload is optional, so set pc to 0 if absent */
 	bl_params_node->ep_info->args.arg3 = fdt_addr;
 	bl_params_node->ep_info->pc = bl32_entry ? bl32_entry : 0;
+
+#ifdef CONFIG_ARM64 /* TODO: define for ARM32 */
 	bl_params_node->ep_info->spsr = SPSR_64(MODE_EL1, MODE_SP_ELX,
 						DISABLE_ALL_EXECPTIONS);
+#endif
+
 	SET_PARAM_HEAD(bl_params_node->image_info, ATF_PARAM_IMAGE_BINARY,
 		       ATF_VERSION_2, 0);
 
@@ -165,8 +181,21 @@ struct bl_params *bl2_plat_get_bl31_params_v2_default(ulong bl32_entry,
 	/* BL33 expects to receive the primary CPU MPID (through x0) */
 	bl_params_node->ep_info->args.arg0 = 0xffff & read_mpidr();
 	bl_params_node->ep_info->pc = bl33_entry;
+#ifdef CONFIG_ARM64
 	bl_params_node->ep_info->spsr = SPSR_64(MODE_EL2, MODE_SP_ELX,
 						DISABLE_ALL_EXECPTIONS);
+#else
+	bl_params_node->ep_info->spsr = SPSR_MODE32(MODE32_hyp,
+					 SPSR_T_ARM,
+#ifdef __ARMEB__
+					 SPSR_E_BIG,
+#else
+					 SPSR_E_LITTLE,
+#endif
+					 DISABLE_ALL_EXECPTIONS);
+#endif
+
+
 	SET_PARAM_HEAD(bl_params_node->image_info, ATF_PARAM_IMAGE_BINARY,
 		       ATF_VERSION_2, 0);
 
@@ -180,11 +209,23 @@ __weak struct bl_params *bl2_plat_get_bl31_params_v2(ulong bl32_entry,
 	return bl2_plat_get_bl31_params_v2_default(bl32_entry, bl33_entry,
 						   fdt_addr);
 }
-
+#ifdef CONFIG_ARM64
 static inline void raw_write_daif(unsigned int daif)
 {
 	__asm__ __volatile__("msr DAIF, %x0\n\t" : : "r" (daif) : "memory");
 }
+#else
+static inline void raw_write_aif(unsigned int aif)
+{
+	unsigned int val;
+
+	val = get_cpsr();
+	val &= ~SPSR_EXCEPTION_MASK;
+	val |= aif;
+
+	__asm__ __volatile__("msr cpsr_c, %0\n\t" : : "r" (val)  );
+}
+#endif
 
 typedef void __noreturn (*atf_entry_t)(struct bl31_params *params, void *plat_params);
 
@@ -202,7 +243,11 @@ static void __noreturn bl31_entry(ulong bl31_entry, ulong bl32_entry,
 		bl31_params = bl2_plat_get_bl31_params(bl32_entry, bl33_entry,
 						       fdt_addr);
 
+#ifdef CONFIG_ARM64
 	raw_write_daif(SPSR_EXCEPTION_MASK);
+#else
+	raw_write_aif(SPSR_EXCEPTION_MASK);
+#endif
 	if (!CONFIG_IS_ENABLED(SYS_DCACHE_OFF))
 		dcache_disable();
 
