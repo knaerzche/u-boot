@@ -31,7 +31,7 @@
 #endif
 #endif
 
-#if defined(CONFIG_SPL_FIT) && (defined(CONFIG_ARM64) || defined(CONFIG_SPL_OPTEE_IMAGE))
+#if defined(CONFIG_SPL_FIT) && (defined(CONFIG_SPL_ATF) || defined(CONFIG_SPL_OPTEE_IMAGE))
 #define HAS_FIT
 #endif
 
@@ -46,7 +46,7 @@
 #ifdef HAS_FIT
 	fit_template: template-1 {
 		type = "fit";
-#ifdef CONFIG_ARM64
+#ifdef CONFIG_SPL_ATF
 		description = "FIT image for U-Boot with bl31 (TF-A)";
 #else
 		description = "FIT image with OP-TEE";
@@ -74,7 +74,7 @@
 #endif
 			};
 
-#ifdef CONFIG_ARM64
+#ifdef CONFIG_SPL_ATF
 			@atf-SEQ {
 				fit,operation = "split-elf";
 				description = "ARM Trusted Firmware";
@@ -114,7 +114,7 @@
 				};
 #endif
 			};
-#else /* !CONFIG_ARM64 */
+#else /* !CONFIG_SPL_ATF */
 			op-tee {
 				description = "OP-TEE";
 				type = "tee";
@@ -132,7 +132,7 @@
 				};
 #endif
 			};
-#endif /* CONFIG_ARM64 */
+#endif /* CONFIG_SPL_ATF */
 
 			@fdt-SEQ {
 				description = "fdt-NAME";
@@ -151,7 +151,7 @@
 			@config-SEQ {
 				description = "NAME.dtb";
 				fdt = "fdt-SEQ";
-#ifdef CONFIG_ARM64
+#ifdef CONFIG_SPL_ATF
 				fit,firmware = "atf-1", "u-boot";
 #else
 				fit,firmware = "op-tee", "u-boot";

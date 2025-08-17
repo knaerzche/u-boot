@@ -294,6 +294,7 @@ int dram_init_banksize(void)
 	size_t ram_top = (unsigned long)(gd->ram_size + CFG_SYS_SDRAM_BASE);
 	size_t top = min((unsigned long)ram_top, (unsigned long)(gd->ram_top));
 
+#ifdef CONFIG_SPL_ATF
 #ifdef CONFIG_ARM64
 	int ret = rockchip_dram_init_banksize();
 
@@ -302,18 +303,21 @@ int dram_init_banksize(void)
 
 	debug("Couldn't use ATAG (%d) to detect DDR layout, falling back...\n",
 	      ret);
+#endif
 
 	/* Reserve 2M for ATF bl31 */
 	gd->bd->bi_dram[0].start = CFG_SYS_SDRAM_BASE + SZ_2M;
 	gd->bd->bi_dram[0].size = top - gd->bd->bi_dram[0].start;
 
 	/* Add usable memory beyond the blob of space for peripheral near 4GB */
+#ifdef CONFIG_ARM64
 	if (ram_top > SZ_4G && top < SZ_4G) {
 		gd->bd->bi_dram[1].start = SZ_4G;
 		gd->bd->bi_dram[1].size = ram_top - gd->bd->bi_dram[1].start;
 	} else if (ram_top > SZ_4G && top == SZ_4G) {
 		gd->bd->bi_dram[0].size = ram_top - gd->bd->bi_dram[0].start;
 	}
+#endif
 #else
 #ifdef CONFIG_SPL_OPTEE_IMAGE
 	struct tos_parameter_t *tos_parameter;
