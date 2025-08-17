@@ -62,6 +62,12 @@
 	clock-names = "clk_edp", "clk_edp_24m", "pclk_edp";
 };
 
+#ifdef CONFIG_SPL_ATF
+&emmc {
+	u-boot,spl-fifo-mode;
+};
+#endif
+
 &gpio7 {
 	bootph-all;
 };
@@ -77,6 +83,12 @@
 &sgrf {
 	bootph-all;
 };
+
+#ifdef CONFIG_SPL_ATF
+&sdmmc {
+	u-boot,spl-fifo-mode;
+};
+#endif
 
 &uart0 {
 	clock-frequency = <24000000>;
