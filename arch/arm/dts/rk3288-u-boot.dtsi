@@ -44,6 +44,13 @@
 		reg = <0x0 0xffac0000 0x0 0x2000>;
 		bootph-all;
 	};
+
+#ifdef CONFIG_ARM_PSCI_FW
+	psci {
+		compatible = "arm,psci-1.0";
+		method = "smc";
+	};
+#endif
 };
 
 &bus_intmem {
@@ -56,6 +63,20 @@
 &cru {
 	bootph-all;
 };
+
+#ifdef CONFIG_ARM_PSCI_FW
+&cpu1 {
+	enable-method = "psci";
+};
+
+&cpu2 {
+	enable-method = "psci";
+};
+
+&cpu3 {
+	enable-method = "psci";
+};
+#endif
 
 &edp {
 	clocks = <&cru SCLK_EDP>, <&cru SCLK_EDP_24M>, <&cru PCLK_EDP_CTRL>;
