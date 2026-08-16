@@ -250,6 +250,8 @@ struct th1520_ddr_fw {
 /* UctDatWriteOnlyShadow */
 #define TH1520_PHY_MSG_DATA		TH1520_DDR_PHY_REG(0xd0034)
 
+#define TH1520_BOOTROM_PMP_BASE		0xffdc020000ULL
+
 struct th1520_ddr_priv {
 	void __iomem *phy0;
 	void __iomem *phy1;
@@ -309,10 +311,16 @@ static int th1520_ddr_ctrl_init(void __iomem *ctrlreg, struct th1520_ddr_fw *fw)
 	if (ret)
 		return ret;
 
-	if (fw->ranknum == 2)
+	switch (fw->ranknum) {
+	case 1:
+		writel(0x01080020, ctrlreg + TH1520_CTRL_MSTR);
+		break;
+	case 2:
 		writel(0x03080020, ctrlreg + TH1520_CTRL_MSTR);
-	else
+		break;
+	default:
 		return -EINVAL;
+}
 
 	writel(0x00003030, ctrlreg + TH1520_CTRL_MRCTRL0);
 	writel(0x0002d90f, ctrlreg + TH1520_CTRL_MRCTRL1);
@@ -479,7 +487,10 @@ static int th1520_ddr_ctrl_init(void __iomem *ctrlreg, struct th1520_ddr_fw *fw)
 
 	switch (fw->bitwidth) {
 	case 64:
-		writel(0x00040018, ctrlreg + TH1520_CTRL_ADDRMAP0);
+		if (fw->ranknum == 1)
+			writel(0x0004001f, ctrlreg + TH1520_CTRL_ADDRMAP0);
+		else
+			writel(0x00040018, ctrlreg + TH1520_CTRL_ADDRMAP0);
 		writel(0x00090909, ctrlreg + TH1520_CTRL_ADDRMAP1);
 		writel(0x00000000, ctrlreg + TH1520_CTRL_ADDRMAP2);
 		writel(0x01010101, ctrlreg + TH1520_CTRL_ADDRMAP3);
@@ -606,6 +617,20 @@ static int lpddr4_load_firmware(struct th1520_ddr_priv *priv,
 	return 0;
 }
 
+
+static void th1520_clear_bootrom_ddr_pmp(void)
+{
+	void __iomem *pmp =
+		(void __iomem *)(uintptr_t)TH1520_BOOTROM_PMP_BASE;
+
+	writel(0, pmp + 0x104);
+	writel(0, pmp + 0x100);
+	writel(0, pmp + 0x10c);
+	writel(0, pmp + 0x108);
+	writel(0, pmp + 0x000);
+	mb();
+}
+
 static int th1520_ddr_ctrl_enable(void __iomem *ctrlreg,
 				  struct th1520_ddr_fw *fw)
 {
@@ -719,7 +744,11 @@ static int th1520_ddr_init(struct th1520_ddr_priv *priv)
 		 TH1520_SYS_DDR_CFG0_CTRL_RSTN;
 	writel(reset, priv->sys + TH1520_SYS_DDR_CFG0);
 
-	lpddr4_load_firmware(priv, fw);
+	ret = lpddr4_load_firmware(priv, fw);
+	if (ret) {
+		pr_err("failed to load/train DDR PHY firmware: %d\n", ret);
+		return ret;
+	}
 
 	ret = th1520_ddr_ctrl_enable(priv->ctrl, fw);
 	if (ret) {
@@ -728,6 +757,9 @@ static int th1520_ddr_init(struct th1520_ddr_priv *priv)
 	}
 
 	th1520_ddr_enable_self_refresh(priv->ctrl, priv->sys);
+
+	if (fw->ranknum == 1)
+		th1520_clear_bootrom_ddr_pmp();
 
 	return 0;
 }
