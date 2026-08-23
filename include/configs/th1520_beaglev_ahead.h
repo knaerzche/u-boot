@@ -1,0 +1,23 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+
+#ifndef __TH1520_BEAGLEV_AHEAD_H
+#define __TH1520_BEAGLEV_AHEAD_H
+
+#include <linux/sizes.h>
+
+#define CFG_SYS_NS16550_CLK		100000000
+#define CFG_SYS_SDRAM_BASE		0x00000000
+
+#define UART_BASE	0xffe7014000
+#define UART_REG_WIDTH  32
+
+/* Environment options */
+
+#define CFG_EXTRA_ENV_SETTINGS \
+	"pxefile_addr_r=0x30000000\0" \
+	"kernel_addr_r=0x31000000\0" \
+	"ramdisk_addr_r=0x34000000\0" \
+	"fdt_addr_r=0x40000000\0" \
+	"PS1=[BeagleVAhead]# \0"
+
+#endif /* __TH1520_BEAGLEV_AHEAD_H */

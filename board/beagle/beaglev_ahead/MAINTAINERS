@@ -1,0 +1,5 @@
+BeagleV-Ahead
+M:	Alex Bee <knaerzche@gmail.com>
+S:	Maintained
+F:	board/beagle/beaglev_ahead/
+F:	configs/th1520_beaglev_ahead_defconfig
